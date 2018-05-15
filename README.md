@@ -11,5 +11,3 @@ Documentation:
 Notes:
 [Spring 2018 UROP](https://docs.google.com/document/d/1R5uyp6_O5SVVQWJqtCXIFIJtcqH7gij6alIl-Enn_74/edit?usp=sharing)
 
-**Important**: If the code does not run correctly from the start, remove these two directories from inside the camera-duckie repository and paste in the home directory.
-
