@@ -9,9 +9,9 @@ from sensor_msgs.msg import Image, CompressedImage, CameraInfo
 class duckie_detector_node():
 
     def __init__(self):
+        #setup publisher/subscriber and the OpenCV bridge
         self.detect_pub = rospy.Publisher('/cameraduckie/detected_duckie', Image, queue_size=10)
         self.bridge = CvBridge()
-
         self.cam_sub = rospy.Subscriber('/camera/image_color/compressed', CompressedImage, self.callback)
 
         #SimpleBlobDetector Params
@@ -31,6 +31,8 @@ class duckie_detector_node():
         params.filterByInertia = False
 
         self.detector = cv2.SimpleBlobDetector_create(params)
+
+        #color boundaries for the mask
         self.red_boundary_lower = np.array([0,0,80], dtype="uint8")
         self.red_boundary_upper = np.array([50,50,200], dtype="uint8")
         
@@ -38,12 +40,14 @@ class duckie_detector_node():
     def callback(self,img):
         print("Callback!")
         raw = self.bridge.compressed_imgmsg_to_cv2(img)
-        #keypoints = self.detector.detect(raw)
+        #create a mask on the image before detecting the keypoints
         mask = cv2.inRange(raw,self.red_boundary_lower,self.red_boundary_upper)
         reverse_mask = 255-mask
-        keypoints = self.detector.detect(reverse_mask)
 
+        keypoints = self.detector.detect(reverse_mask)
         img_with_keypoints = cv2.drawKeypoints(raw, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+
+        #convert back to an image msg and publish
         drawn_msg = self.bridge.cv2_to_imgmsg(img_with_keypoints,"bgr8")
         self.detect_pub.publish(drawn_msg)
                 
